@@ -27,7 +27,7 @@ class AuthenticatedSessionController extends Controller
         ]);
         $request->user('super_admin')->setImageURL();
 
-        $token =  $request->user('super_admin')->createToken('API Token')->plainTextToken;
+        $token =  $request->user('super_admin')->createToken('API Token')->accessToken;
 
         return response()->json([
             'token' => $token,

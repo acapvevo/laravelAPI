@@ -2,11 +2,12 @@
 
 namespace App\Http\Requests\SuperAdmin\Auth;
 
-use Illuminate\Auth\Events\Lockout;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
+use App\Models\SuperAdmin;
 use Illuminate\Support\Str;
+use Illuminate\Auth\Events\Lockout;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
@@ -45,15 +46,30 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::guard('super_admin')->attempt($this->only('username', 'password'), $this->filled('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        // dd($this->username);
 
-            throw ValidationException::withMessages([
-                'username' => __('auth.failed'),
-            ]);
+        if(SuperAdmin::where('username', $this->username)->exists()){
+            $user = SuperAdmin::where('username', $this->username)->first();
+
+            if(!password_verify($this->password, $user->password)){
+                $this->failedAuth();
+            }
+        } else {
+            $this->failedAuth();
         }
 
+        auth()->guard('super_admin')->setUser($user);
+
         RateLimiter::clear($this->throttleKey());
+    }
+
+    private function failedAuth()
+    {
+        RateLimiter::hit($this->throttleKey());
+
+        throw ValidationException::withMessages([
+            'username' => __('auth.failed'),
+        ]);
     }
 
     /**
