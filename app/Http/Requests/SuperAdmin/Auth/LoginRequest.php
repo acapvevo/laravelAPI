@@ -46,8 +46,6 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // dd($this->username);
-
         if(SuperAdmin::where('username', $this->username)->exists()){
             $user = SuperAdmin::where('username', $this->username)->first();
 

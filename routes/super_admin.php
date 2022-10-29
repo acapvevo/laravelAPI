@@ -51,10 +51,8 @@ Route::prefix('super_admin')->name('super_admin.')->group(function () {
         Route::prefix('user')->name('user.')->group(function () {
 
             Route::get('', function(Request $request){
-                return response()->json([
-                    "name" => $request->user('super_admin')->name,
-                    "image" => $request->user('super_admin')->getImageURL(),
-                ]);
+                $request->user('super_admin')->setImageURL();
+                return response()->json($request->user('super_admin'));
             });
 
             //Profile
@@ -71,11 +69,10 @@ Route::prefix('super_admin')->name('super_admin.')->group(function () {
             //Profile Picture
             Route::prefix('picture')->name('picture.')->group(function () {
                 Route::patch('', [PictureController::class, 'update'])->name('update');
-                Route::get('', [PictureController::class, 'show'])->name('show');
             });
         });
 
-        Route::prefix('setting')->name('setting.')->group(function () {
+        Route::prefix('system')->name('system.')->group(function () {
             Route::prefix('health')->name('health.')->group(function () {
                 Route::get('', HealthCheckJsonResultsController::class)->name('check');
             });

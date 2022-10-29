@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Laravel\Passport\HasApiTokens;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -49,11 +50,24 @@ class SuperAdmin extends Authenticatable
 
     public function setImageURL()
     {
-        $this->image = isset($this->image) ? route('super_admin.user.picture.show') : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+        if(isset($this->image)){
+            $image = Storage::get('profile_picture/super_admin/' . $this->image);
+            $type = pathinfo('profile_picture/super_admin/' . $this->image, PATHINFO_EXTENSION);
+            $this->image = 'data:image/' . $type . ';base64,' . base64_encode($image);
+        }
+        else{
+            $this->image = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+        }
     }
 
     public function getImageURL()
     {
-        return isset($this->image) ? route('super_admin.user.picture.show') : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+        if(isset($this->image)){
+            $image = Storage::get('profile_picture/super_admin/' . $this->image);
+            $type = pathinfo('profile_picture/super_admin/' . $this->image, PATHINFO_EXTENSION);
+            return 'data:image/' . $type . ';base64,' . base64_encode($image);
+        }
+
+        return 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
     }
 }

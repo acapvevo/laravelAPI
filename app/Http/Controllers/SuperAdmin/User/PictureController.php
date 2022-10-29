@@ -33,11 +33,4 @@ class PictureController extends Controller
 
         return response()->noContent();
     }
-
-    public function show()
-    {
-        $user = Auth::guard('super_admin')->user();
-
-        return Storage::response('profile_picture/super_admin/' . $user->image);
-    }
 }
