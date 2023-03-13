@@ -19,13 +19,13 @@ class PictureController extends Controller
         $user = Auth::guard('super_admin')->user();
 
         $imageName = $user->id . '.' . $request->image->extension();
-        $imagePath = "app\\profile_picture\\super_admin";
+        $imagePath = "app/profile_picture/super_admin";
 
         $img = Image::make($request->image);
-        if(!Storage::exists("profile_picture\\super_admin")) {
-            Storage::makeDirectory("profile_picture\\super_admin"); //creates directory
+        if(!Storage::exists("profile_picture/super_admin")) {
+            Storage::makeDirectory("profile_picture/super_admin"); //creates directory
         }
-        $img->fit(200)->save(storage_path($imagePath . '\\' . $imageName));
+        $img->fit(200)->save(storage_path($imagePath . '/' . $imageName));
 
         $user->image = $imageName;
 
