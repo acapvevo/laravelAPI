@@ -9,11 +9,10 @@
         "barryvdh/laravel-dompdf": "^3.0",
         "intervention/image": "^3.8",
         "laravel/framework": "^11.9",
-        "laravel/passport": "^12.0",
-        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
         "owen-it/laravel-auditing": "^13.6",
+        "php-open-source-saver/jwt-auth": "^2.7",
         "spatie/laravel-health": "^1.30"
     },
     "require-dev": {
@@ -23,7 +22,8 @@
         "laravel/sail": "^1.26",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.0",
-        "phpunit/phpunit": "^11.0.1"
+        "pestphp/pest": "^3.2",
+        "pestphp/pest-plugin-laravel": "^3.0"
     },
     "autoload": {
         "psr-4": {
