@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -14,6 +15,9 @@ Route::middleware('guest:api')->group(function () {
 
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])
         ->name('login');
+
+    Route::post('/refresh', [AuthenticatedSessionController::class, 'refresh'])
+        ->name('refresh');
 
     Route::prefix('password')->name('password')->group(function () {
         Route::post('/forgot', [PasswordResetLinkController::class, 'store'])
@@ -37,6 +41,20 @@ Route::middleware('auth:api')->group(function () {
             ->name('send');
     });
 
-    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
+    Route::get('/logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    Route::prefix('profile')->name('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'index'])
+            ->name('index');
+
+        Route::post('/picture', [ProfileController::class, 'picture'])
+            ->name('picture');
+
+        Route::post('/password', [ProfileController::class, 'password'])
+            ->name('password');
+
+        Route::patch('/', [ProfileController::class, 'update'])
+            ->name('update');
+    });
 });

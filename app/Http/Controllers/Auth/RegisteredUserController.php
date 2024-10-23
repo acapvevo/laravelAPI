@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Traits\UserTrait;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,6 +15,8 @@ use Illuminate\Validation\Rules;
 
 class RegisteredUserController extends Controller
 {
+    use UserTrait;
+
     /**
      * Handle an incoming registration request.
      *
@@ -34,12 +37,8 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
-        $token = Auth::login($user);
+        Auth::attempt($user);
 
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => Auth::factory()->getTTL() * 60
-        ]);
+        return $this->returnResponse(true);
     }
 }

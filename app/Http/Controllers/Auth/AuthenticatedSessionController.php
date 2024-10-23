@@ -3,38 +3,43 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
+use App\Traits\UserTrait;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Http\JsonResponse;
 
 class AuthenticatedSessionController extends Controller
 {
+    use UserTrait;
+
     /**
      * Handle an incoming authentication request.
      */
     public function store(LoginRequest $request): JsonResponse
     {
-        $token = $request->authenticate();
+        $request->authenticate();
 
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => Auth::factory()->getTTL() * 60
-        ]);
+        $user = User::find(Auth::user()->id);
+        $user->last_login = now();
+        $user->timezone = $request->input('timezone');
+
+        $user->save();
+
+        return $this->returnResponse(false);
     }
 
-    public function refresh(): JsonResponse
+    public function refresh(Request $request): JsonResponse
     {
-        $token = Auth::refresh();
-
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => Auth::factory()->getTTL() * 60
+        $request->validate([
+            'refresh_token' => 'required|string'
         ]);
+
+        Auth::setToken($request->input('refresh_token'));
+
+        return $this->returnResponse(true);
     }
 
     /**
