@@ -16,12 +16,13 @@ return new class extends Migration
 
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
 
-            $table->string('line_1')->default('');
-            $table->string('line_2')->default('');
-            $table->string('line_3')->default('');
-            $table->string('postcode')->default('');
-            $table->string('city')->default('');
-            $table->string('state')->default('');
+            $table->string('line_1')->nullable();
+            $table->string('line_2')->nullable();
+            $table->string('line_3')->nullable();
+            $table->string('postcode')->nullable();
+            $table->string('city')->nullable();
+            $table->string('state')->nullable();
+            $table->string('country')->nullable();
 
             $table->timestampsTz();
             $table->softDeletesTz();

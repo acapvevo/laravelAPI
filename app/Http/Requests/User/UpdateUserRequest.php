@@ -3,7 +3,6 @@
 namespace App\Http\Requests\User;
 
 use App\Models\User;
-use App\Enums\Gender;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -14,7 +13,7 @@ class UpdateUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->hasAllPermissions(['users', 'users.edit']);
     }
 
     /**
@@ -24,48 +23,53 @@ class UpdateUserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $user = $this->user();
+        $user = User::find($this->route('id'));
 
         return [
+            'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
             'name' => ['required', 'string', 'max:255'],
             'gender' => ['required', 'string', 'max:255', 'in:F,M'],
-            'email_address' => ['required', 'string', 'max:255', 'email', Rule::unique('users')->ignore($user->id)],
-            'phone_number' => ['nullable', 'string', 'max:255'],
-            'address.line_1' => ['required', 'string', 'max:255'],
-            'address.line_2' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'max:255', 'email', Rule::unique('users')->ignore($user->id)],
+            'phone_number.number' => ['nullable', 'string', 'max:255'],
+            'phone_number.iso2' => ['nullable', 'string', 'max:255'],
+            'address.line_1' => ['nullable', 'string', 'max:255'],
+            'address.line_2' => ['nullable', 'string', 'max:255'],
             'address.line_3' => ['nullable', 'string', 'max:255'],
-            'address.postcode' => ['required', 'string', 'max:255'],
-            'address.city' => ['required', 'string', 'max:255'],
-            'address.state' => ['required', 'string', 'max:255'],
-            'address.country' => ['required', 'array'],
-            'address.country.iso2' => ['required', 'string', 'max:255'],
-            'address.country.name' => ['required', 'string', 'max:255']
+            'address.postcode' => ['nullable', 'string', 'max:255'],
+            'address.city' => ['nullable', 'string', 'max:255'],
+            'address.state' => ['nullable', 'string', 'max:255'],
+            'address.country' => ['nullable', 'string', 'max:255'],
+            'roles' => ['required', 'array'],
+            'roles.*' => ['required', 'string', 'exists:roles,name']
         ];
     }
 
     public function save()
     {
-        $user = User::find($this->user()->id);
+        $user = User::find($this->route('id'));
 
+        $user->username = $this->input('username');
         $user->name = $this->input('name');
-        $user->email_address = $this->input('email_address');
-        $user->phone_number = $this->input('phone_number');
+        $user->email = $this->input('email');
         $user->gender = $this->input('gender');
 
         $user->save();
 
+        $user->phone_number->iso2 = $this->input('phone_number.iso2');
+        $user->phone_number->number = $this->input('phone_number.number');
+
+        $user->phone_number->save();
+
         $user->address->line_1 = $this->input('address.line_1');
         $user->address->line_2 = $this->input('address.line_2');
-        $user->address->line_3 = $this->input('address.line_3') ?? '';
+        $user->address->line_3 = $this->input('address.line_3');
         $user->address->postcode = $this->input('address.postcode');
         $user->address->city = $this->input('address.city');
         $user->address->state = $this->input('address.state');
+        $user->address->country = $this->input('address.country');
 
         $user->address->save();
 
-        $user->address->country->iso2 = $this->input('address.country.iso2');
-        $user->address->country->name = $this->input('address.country.name');
-        
-        $user->address->country->save();
+        $user->assignRole($this->input('roles'));
     }
 }

@@ -2,8 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Setting\RoleController;
+use App\Http\Controllers\Setting\UserController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Setting\PermissionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -56,5 +59,52 @@ Route::middleware('auth:api')->group(function () {
 
         Route::patch('/', [ProfileController::class, 'update'])
             ->name('update');
+    });
+
+    Route::prefix('setting')->name('setting')->group(function () {
+        Route::prefix('user')->middleware('can:users')->name('user')->group(function () {
+            Route::get('/', [UserController::class, 'list'])
+                ->middleware('can:users.view')
+                ->name('list');
+            Route::get('/{id}', [UserController::class, 'index'])
+                ->middleware('can:users.view')
+                ->name('index');
+            Route::post('/', [UserController::class, 'create'])
+                ->middleware('can:users.create')
+                ->name('create');
+            Route::patch('/{id}', [UserController::class, 'update'])
+                ->middleware('can:users.update')
+                ->name('update');
+            Route::delete('/{id}', [UserController::class, 'delete'])
+                ->middleware('can:users.delete')
+                ->name('delete');
+        });
+
+        Route::prefix('role')->middleware('can:roles')->name('role')->group(function () {
+            Route::get('/', [RoleController::class, 'list'])
+                ->middleware('can:roles.view')
+                ->name('list');
+            Route::get('/{id}', [RoleController::class, 'index'])
+                ->middleware('can:roles.view')
+                ->name('index');
+            Route::post('/', [RoleController::class, 'create'])
+                ->middleware('can:roles.create')
+                ->name('create');
+            Route::patch('/{id}', [RoleController::class, 'update'])
+                ->middleware('can:roles.update')
+                ->name('update');
+            Route::delete('/{id}', [RoleController::class, 'delete'])
+                ->middleware('can:roles.delete')
+                ->name('delete');
+        });
+
+        Route::prefix('permission')->middleware('can:permissions')->name('permission')->group(function () {
+            Route::get('/', [PermissionController::class, 'list'])
+                ->middleware('can:permissions.view')
+                ->name('list');
+            Route::get('/{id}', [PermissionController::class, 'index'])
+                ->middleware('can:permissions.view')
+                ->name('index');
+        });
     });
 });

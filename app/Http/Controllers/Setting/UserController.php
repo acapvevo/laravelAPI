@@ -3,14 +3,49 @@
 namespace App\Http\Controllers\Setting;
 
 use App\Models\User;
+use App\Traits\UserTrait;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\User\CreateUserRequest;
+use App\Http\Requests\User\UpdateUserRequest;
 
 class UserController extends Controller
 {
+    use UserTrait;
+
+    public function list()
+    {
+        $current_user = $this->getCurrentUser(false);
+        $users = User::withTrashed()->where('id', '!=', $current_user->id)->get();
+
+        return response()->json($users);
+    }
 
     public function index($id)
+    {
+        $user = User::with(['address', 'phone_number'])->find($id);
+
+        if (!$user)
+            return response()->json([
+                'type' => 'warning',
+                'text' => __('User not Found'),
+            ], 400);
+
+        return response()->json([...$user->toArray(), 'roles' => $user->getRoleNames()]);
+    }
+
+    public function create(CreateUserRequest $request)
+    {
+        $request->save();
+
+        return response()->json([
+            'type' => 'success',
+            'text' => __('User created successfully')
+        ]);
+    }
+
+    public function update(UpdateUserRequest $request, $id)
     {
         $user = User::find($id);
 
@@ -20,30 +55,30 @@ class UserController extends Controller
                 'text' => __('User not Found'),
             ], 400);
 
-        return response()->json($user);
-    }
-
-    public function create(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
-            'username' => 'required|string|max:255',
-        ]);
-
-        $user = new User($request->all());
-        $user->password = Hash::make('password');
-        $user->save();
-
-        $user->address()->create();
+        $request->save();
 
         return response()->json([
             'type' => 'success',
-            'text' => __('User saved successfully')
+            'text' => __('User updated successfully')
         ]);
     }
 
-    public function update(Request $request, $id) {}
+    public function delete($id)
+    {
+        $user = User::find($id);
 
-    public function delete($id) {}
+        if (!$user)
+            return response()->json([
+                'type' => 'warning',
+                'text' => __('User not Found'),
+            ], 400);
+
+        $user->delete();
+
+
+        return response()->json([
+            'type' => 'success',
+            'text' => __('User deleted successfully')
+        ]);
+    }
 }

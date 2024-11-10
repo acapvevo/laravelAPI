@@ -16,11 +16,10 @@ return new class extends Migration
 
             $table->string('username')->unique();
             $table->string('name');
-            $table->string('email_address')->unique();
+            $table->string('email')->unique();
             $table->string(column: 'gender');
             $table->string('profile_picture')->nullable();
             $table->string('timezone')->nullable();
-            $table->string('phone_number')->nullable();
 
             $table->rememberToken();
             $table->string('password');

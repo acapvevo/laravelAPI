@@ -2,17 +2,37 @@
 
 namespace App\Models;
 
+use OwenIt\Auditing\Models\Audit;
 use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Auditable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use OwenIt\Auditing\Auditable as AuditableTrait;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Address extends Model
+class Address extends Model implements Auditable
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, AuditableTrait;
 
     /**
-     * Get the user that owns the phone.
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'line_1',
+        'line_2',
+        'line_3',
+        'postcode',
+        'city',
+        'state',
+        'country',
+    ];
+
+    /**
+     * Get the user that owns the address.
      */
     public function user(): BelongsTo
     {
@@ -20,10 +40,10 @@ class Address extends Model
     }
 
     /**
-     * Get the country associated with the address.
+     * Get all of the Address's audit.
      */
-    public function country(): HasOne
+    public function audit(): MorphMany
     {
-        return $this->hasOne(Country::class);
+        return $this->morphMany(Audit::class, 'auditable');
     }
 }

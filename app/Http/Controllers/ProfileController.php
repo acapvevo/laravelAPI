@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -18,7 +19,7 @@ class ProfileController extends Controller
 
     public function index()
     {
-        return response()->json($this->getUser(Auth::user()->id, true));
+        return response()->json($this->getFullUserInfo(Auth::user()->id, true));
     }
 
     public function picture(Request $request)
@@ -32,7 +33,7 @@ class ProfileController extends Controller
         $image = Image::read($request->file('profile_picture'));
         $image->resize(300, 200)->toJpeg();
 
-        $basePath = $this->getBasePath($user->id);
+        $basePath = $this->getFilePath($user->id);
         Storage::put($basePath . 'profile_picture.jpg', $image->encode());
 
         $user->profile_picture = $basePath . 'profile_picture.jpg';
@@ -45,7 +46,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function update(UpdateUserRequest $request)
+    public function update(UpdateProfileRequest $request)
     {
         $request->save();
 

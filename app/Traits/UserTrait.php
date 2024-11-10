@@ -3,7 +3,11 @@
 namespace App\Traits;
 
 use App\Models\User;
+use App\Models\Address;
+use App\Models\Country;
+use App\Models\PhoneNumber;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 trait UserTrait
@@ -20,13 +24,15 @@ trait UserTrait
             'refresh_token' => $refresh,
             'token_type' => 'Bearer',
             'expires_in' => $expired_in,
-            'user' => $this->getUser($user->id, true)
+            'user' => $this->getFullUserInfo($user->id, true),
+            'permissions' => $user->getAllPermissions()->pluck('name'),
+            'roles' => $user->getRoleNames()
         ]);
     }
 
-    public function getUser(int $id, bool $isView)
+    public function getFullUserInfo(int $id, bool $isView)
     {
-        $user = User::find($id);
+        $user = User::with(['address', 'phone_number'])->find($id);
 
         if (!$user) return null;
 
@@ -39,15 +45,28 @@ trait UserTrait
 
     public function getCurrentUser(bool $isView)
     {
-        return $this->getUser(Auth::user()->id, $isView);
+        return $this->getFullUserInfo(Auth::user()->id, $isView);
     }
 
-    public function getBasePath(int $user_id)
+    public function getFilePath(int $user_id)
     {
         $basePath = 'user/' . $user_id . '/';
         if (!Storage::exists($basePath))
             Storage::createDirectory($basePath);
 
         return $basePath;
+    }
+
+    public function addUser(array $_user, array $_address, array $_phone_number){
+        $user = new User($_user);
+        $user->save();
+
+        $phone_number = new PhoneNumber($_phone_number);
+        $user->phone_number()->save($phone_number);
+
+        $address = new Address($_address);
+        $user->address()->save($address);
+
+        return $user;
     }
 }
