@@ -14,10 +14,13 @@ class UserController extends Controller
 {
     use UserTrait;
 
-    public function list()
+    public function list(Request $request)
     {
         $current_user = $this->getCurrentUser(false);
-        $users = User::withTrashed()->where('id', '!=', $current_user->id)->get();
+        $query = json_decode($request->query('query'), true);
+
+        $builder = queryTransformer($query['rules'], User::query(), $query['combinator']);
+        $users = $builder->where('id', '!=', $current_user->id)->get();
 
         return response()->json($users);
     }
